@@ -6,6 +6,11 @@ sub bloodhound {
     bpowershell($1, "Invoke-BloodHound");
 }
 
+sub sessionsOnly {
+    bpowershell_import($1, script_resource("scripts/BloodHound.ps1"));
+    bpowershell($1, "Invoke-BloodHound -CollectionMethod Session");
+}
+
 # Alias to run BloodHound from Beacon quickly
 alias bloodhound {
     bloodhound($1);
@@ -18,6 +23,12 @@ popup beacon_bottom {
             local('$bid');
             foreach $bid ($1) {
                 bloodhound ($1);
+            }
+        }
+        item "BloodHound (Sessions)" {
+            local ('$bid');
+            foreach $bid ($1) {
+                sessionsOnly($1);
             }
         }
     }
