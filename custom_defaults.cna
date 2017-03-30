@@ -1,0 +1,23 @@
+# Some of my defaults for Cobalt Strike.
+# 001SPARTaN
+
+# Keyboard shortcuts
+bind Meta+Right {
+    nextTab();
+}
+
+bind Meta+Left {
+    previousTab();
+}
+
+bind Ctrl+Tab {
+    nextTab();
+}
+
+bind Ctrl+Shift+Tab {
+    previousTab();
+}
+
+# Load scripts
+include(script_resource("powershell.cna"));
+include(script_resource("ElevateKit/elevate.cna"));

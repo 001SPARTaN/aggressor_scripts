@@ -3,8 +3,7 @@ A collection of useful scripts for Cobalt Strike
 
 This repository will contain all the aggressor scripts that I feel are useful enough to warrant making public.
 
-**bloodhound.cna** is a simple script to add the ability to import and run BloodHound on a target machine,
-via a Beacon menu or from the Beacon console.
+**powershell.cna** is a script to import and run some commonly used Powershell tools via a Beacon menu or from the Beacon console.
 
 **bot.cna** is a little chat bot for the Cobalt Strike event log. Commands include !ping, !beacons, !listeners, !elevate, !screenshot, !downloadstring and !psexec. NOTE: This is intended to be run headless (with ./agscript).
 
