@@ -14,10 +14,12 @@ bind Ctrl+Tab {
     nextTab();
 }
 
-bind Ctrl+Shift+Tab {
-    previousTab();
-}
-
 # Load scripts
 include(script_resource("powershell.cna"));
 include(script_resource("ElevateKit/elevate.cna"));
+
+# Change default Event Log
+set EVENT_SBAR_RIGHT {
+    $beacons = size(beacons());
+    return "[\c9Beacons: $beacons\o | lag: $1 $+ ]";
+}
