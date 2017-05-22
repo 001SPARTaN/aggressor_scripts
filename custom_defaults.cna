@@ -27,7 +27,6 @@ set EVENT_SBAR_RIGHT {
 
 on beacon_initial {
     if (-isadmin $1) {
-        $host = $1['computer']
         exec("say -v Fiona 'New admin beacon!'");
     }
 }
