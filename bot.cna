@@ -8,11 +8,6 @@
 # - Automatically bypass UAC
 # - Screenshot all beacons
 
-
-# @variable = array
-# %variable = hash
-# $variable = variable
-
 # PsExec against $target from $bid
 # TODO figure out how to use with make_token
 sub psexecTarget {
