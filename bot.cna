@@ -137,7 +137,7 @@ sub notifyBeacon {
     # println(@cmd);
 
     # Run our curl command and get the output
-    # println(readAll(exec(@cmd)));
+    readAll(exec(@cmd));
 }
 
 # Triggered whenever user joins the teamserver
