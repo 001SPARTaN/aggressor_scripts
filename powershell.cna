@@ -90,12 +90,6 @@ popup beacon_bottom {
                     inveigh($bid);
                 }
             }
-            item "Inveigh (Unprivileged)" {
-                local('$bid');
-                foreach $bid ($1) {
-                    inveighUnprivileged($bid);
-                }
-            }
             separator();
             item "SessionGopher" {
                 local ('$bid');
