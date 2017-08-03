@@ -1,0 +1,34 @@
+# Grab all screenshots and download
+# 001SPARTaN
+
+sub getScreenshots {
+    # Iterate through screenshots
+    foreach %s (screenshots()) {
+        # Each screenshot is stored as 
+        # %(data => <BINARY DATA>, bid => <BID>, when => <TIMESTAMP>)
+        $bid = %s['bid'];
+        # Pull computer name, timestamp so we can name files appropriately
+        $computer = binfo($bid, "computer");
+        $timestamp = %s['when'];
+        # Pull data so that we can write to file
+        $data = %s['data'];
+
+        # Filename is COMPUTERNAME_TIMESTAMP.jpg
+        $fname = $computer . "_" . $timestamp . ".jpg";
+        # Open file for writing as $handle
+        # Change to whatever directory you want (e.g. '>engagement/screenshots/$fname')
+        $handle = openf(">$fname");
+        # Write $data to the file handle
+        writeb($handle, $data);
+        # Close file handle
+        closef($handle);
+        println("Saving screenshot: " . $fname);
+   } 
+}
+
+# Add item to the "Cobalt Strike" menu
+popup aggressor {
+    item "Download Screenshots" {
+        getScreenshots();
+    }
+}
