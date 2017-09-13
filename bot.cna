@@ -113,7 +113,7 @@ sub getVersion {
     bnote($bid, "OS: $winver");
 }
 
-# Send Flowdock notification on a new Beacon
+# Send Slack notification on a new Beacon
 sub notifyBeacon {
     local ('$bid $bUser $bIntIP $bName $msg @cmd $url');
 
@@ -122,28 +122,19 @@ sub notifyBeacon {
     $bIntIP = binfo($bid, 'host');
     $bName = binfo($bid, 'computer');
 
-    # Text file with Flowdock URL containing API key for authentication
-    $url = readln(openf("CHANGEME.TXT"));
-    # println($url);
+    # Text file with Slack webhook URL
+    $url = readln(openf("url.txt"));
 
-    $msg = " @team New Beacon: " . $bUser . "@" . $bIntIP . " (". $bName . ")";
-    # println($msg);
+    $msg = $bUser . "@" . $bIntIP . " (". $bName . ")";
 
     # Codename to tag message with
-    $codename = "GREENBEAN";
+    $codename = "CODENAME";
 
     # Build our curl command
-    @cmd = @('curl', '-X', 'POST', '-F', 'event=message', '-F', 'content=' . $msg, '-F', 'tags=C2,' . $codename, $url);
-    # println(@cmd);
+    @cmd = @('curl','-X','POST','--data-urlencode','payload={"username": "Cobalt Strike Bot", "icon_emoji": ":ghost:", "channel": "CHANNEL", "attachments" : [{ "pretext":"<!everyone> ' . $codename . ' - NEW BEACON:" , "text" : "' . $msg . '"}]}',$url);
 
     # Run our curl command and get the output
-    readAll(exec(@cmd));
-}
-
-# Triggered whenever user joins the teamserver
-on event_join {
-    # Welcome them!
-    elog("User \c9$1\c7 joined! Welcome to the teamserver.\o");
+    println(readAll(exec(@cmd)));
 }
 
 # Triggered on all public events in the event log
