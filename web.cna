@@ -1,0 +1,36 @@
+# web.cna
+
+$template = "";
+
+sub loadTemplate {
+    $handle = openf(script_resource("test.html"));
+    @array = readAll($handle);
+    closef($handle);
+    
+    foreach $line (@array) {
+        println($line);
+        $template .= $line . "\n";
+    }
+
+    println("Loaded template.");
+}
+
+sub hostPage {
+    $page = $template;
+    %replace = %(
+        TEST => "Whee!",
+        asdf => "Bleh"
+    );
+
+    foreach $key (keys(%replace)) {
+        $value = %replace["$key"];
+        println("Replacing $key with $value");
+        $page = replace($page, "##$key\#\#", $value);
+    }
+
+    site_kill(80, "/test");
+    site_host(localip(), 80, "/test", $page, "text/html", "Testing", false);
+}
+
+loadTemplate();
+hostPage();
