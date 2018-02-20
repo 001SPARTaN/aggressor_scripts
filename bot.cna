@@ -56,6 +56,9 @@ sub getDownloadString {
             say("Found Powershell DownloadString payload: \c9$downloadString\o");
             return true;
         }
+        else {
+            say("No DownloadString cradle found. Try !downloadstring <LISTENER> first.");
+        }
     }
     return false;
 }
