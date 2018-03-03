@@ -1,0 +1,19 @@
+# http.cna
+# utilities for http requests from Aggressor scripts
+# 001SPARTaN
+
+sub http_get {
+    $url = [new java.net.URL: $1];
+    $stream = [$url openStream];
+    $handle = [SleepUtils getIOHandle: $stream, $null];
+
+    @content = readAll($handle);
+
+    foreach $line (@content) {
+        $output .= $line . "\r\n";
+    }
+
+    println($output);
+}
+
+http_get("https://ipinfo.io/json");
