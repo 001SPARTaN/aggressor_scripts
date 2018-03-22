@@ -3,6 +3,7 @@
 # 001SPARTaN
 
 sub http_get {
+    local('$output');
     $url = [new java.net.URL: $1];
     $stream = [$url openStream];
     $handle = [SleepUtils getIOHandle: $stream, $null];
@@ -17,3 +18,29 @@ sub http_get {
 }
 
 http_get("https://ipinfo.io/json");
+
+sub http_post {
+    local('$output');
+    $url = [new java.net.URL: $1];
+    $conn = [$url openConnection];
+    [$conn setDoOutput: true];
+    $payload = "testing";
+    println("Payload: $payload");
+    println("Content-Length: " . strlen($payload));
+    [$conn setRequestProperty: "Content-Length", strlen($payload)];
+    [$conn setRequestProperty: "Content-Type", "text/plain"];
+
+    $handle = [SleepUtils getIOHandle: [$conn getInputStream], [$conn getOutputStream]];
+
+    println($handle, $payload);
+
+    @content = readAll($handle);
+
+    foreach $line (@content) {
+        $output .= $line . "\r\n";
+    }
+
+    println($output);
+}
+
+http_post("http://localhost/test?param=param1");
