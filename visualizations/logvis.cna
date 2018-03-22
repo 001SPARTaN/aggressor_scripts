@@ -85,6 +85,9 @@ sub createVisualization {
 
 	# Set $sorter as the row sorter for $table
 	[$table setRowSorter: $sorter];
+	
+	# Change resize mode for columns to make the layout a bit nicer.
+	# [$table setAutoResizeMode: [JTable AUTO_RESIZE_ON]];
 
 	# Create a split pane (divider you can drag around)
 	$content = [new JScrollPane: $table];
@@ -92,13 +95,13 @@ sub createVisualization {
 	# Set popup menu for the table
 	setupPopupMenu($table, "command_log");
 
+	# Update table contents
 	updateTable();
 
-	# Register the visualization with CS
-	addVisualization("Beacon Command Log", $content);
+	# Return the JScrollPane 
+	return $content;
 }
 
-createVisualization();
 
 popup command_log {
 	item "Copy" {
@@ -122,7 +125,12 @@ popup command_log {
 
 popup view {
 	item "Command Log" {
-		# Show the visualization
-		showVisualization("Beacon Command Log");
+		# Add a tab with the table
+		$tab = createVisualization();
+		addTab("Beacon Command Log", $tab, "A table of commands that have been run on all beacons.");
 	}
+}
+
+on beacon_input {
+	updateTable();
 }
