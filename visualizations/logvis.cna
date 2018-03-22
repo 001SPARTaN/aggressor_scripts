@@ -26,7 +26,7 @@ sub updateTable {
                 %modelEntry['user'] = binfo($bid, "user");
                 %modelEntry['pid'] = binfo($bid, "pid");
                 %modelEntry['command'] = @entry[3];
-                %modelEntry['timestamp'] = formatDate(@entry[4], "MMM D HH:mm:ss z");
+                %modelEntry['timestamp'] = formatDate(@entry[4], "MMM dd HH:mm:ss z");
                 # Add the new entry to $model
                 [$model addEntry: %modelEntry];
             }
