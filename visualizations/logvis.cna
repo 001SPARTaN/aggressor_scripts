@@ -20,26 +20,26 @@ sub updateTable {
 		# For each entry in beaconlog, populate a row in the table
 		foreach @entry (data_query('beaconlog')) {
 			# We only care about beacon_input events because those are commands run by operators
-            if (@entry[0] eq "beacon_input") {
+			if (@entry[0] eq "beacon_input") {
 				# Get operator who ran the command
-                %modelEntry['operator'] = @entry[2];
+				%modelEntry['operator'] = @entry[2];
 				# Get bid of command
-                $bid = @entry[1];
+				$bid = @entry[1];
 				# Get internal IP of system
-                %modelEntry['ip'] = binfo($bid, "internal");
+				%modelEntry['ip'] = binfo($bid, "internal");
 				# Get hostname of system
-                %modelEntry['hostname'] = binfo($bid, "computer");
+				%modelEntry['hostname'] = binfo($bid, "computer");
 				# Get username beacon is runnning as
-                %modelEntry['user'] = binfo($bid, "user");
+				%modelEntry['user'] = binfo($bid, "user");
 				# Get pid of beacon
-                %modelEntry['pid'] = binfo($bid, "pid");
+				%modelEntry['pid'] = binfo($bid, "pid");
 				# Get command run on the beacon
-                %modelEntry['command'] = @entry[3];
+				%modelEntry['command'] = @entry[3];
 				# Get timestamp of command
-                %modelEntry['timestamp'] = formatDate(@entry[4], "MMM dd HH:mm:ss z");
-                # Add the new entry to $model
-                [$model addEntry: %modelEntry];
-            }
+				%modelEntry['timestamp'] = formatDate(@entry[4], "MMM dd HH:mm:ss z");
+				# Add the new entry to $model
+				[$model addEntry: %modelEntry];
+			}
 		}
 		# Update with the new table
 		[$model fireListeners];
@@ -98,8 +98,41 @@ sub createVisualization {
 	# Change resize mode for columns to make the layout a bit nicer.
 	# [$table setAutoResizeMode: [JTable AUTO_RESIZE_ON]];
 
-	# Create a split pane (divider you can drag around)
-	$content = [new JScrollPane: $table];
+	# Create a scroll pane
+	$scrollPane = [new JScrollPane: $table];
+
+	$bottom = [new JPanel];
+	[$bottom setLayout: [new BoxLayout: $bottom, [BoxLayout Y_AXIS]]];
+	[$bottom setLayout: [new GridLayout: 1, 1]];
+
+	$copyButton = [new JButton: "Copy"];
+
+	[$copyButton addActionListener: lambda({
+		println("Copy action captured!");
+		$selected = "";
+		foreach $row ([$table getSelectedRows]) {
+			# Get values from table
+			# operator [ip_hostname] user/proc | timestamp> command
+			$operator = [$model getValueAt: $row, 0];
+			$ip = [$model getValueAt: $row, 1];
+			$hostname = [$model getValueAt: $row, 2];
+			$user = [$model getValueAt: $row, 3];
+			$proc = [$model getValueAt: $row, 4];
+			$time = [$model getValueAt: $row, 6];
+			$command = [$model getValueAt: $row, 5];
+
+			$selected .= "$operator \[$ip\_$hostname\] $user\/$proc | $time\> $command\n";
+		}
+		add_to_clipboard($selected);
+	}, $model => $model)];
+
+	[$bottom add: $copyButton];
+
+	$content = [new JPanel];
+	[$content setLayout: [new BorderLayout]];
+
+	[$content add: $scrollPane, [BorderLayout CENTER]];
+	[$content add: $bottom, [BorderLayout SOUTH]];
 
 	# Set popup menu for the table
 	setupClickListener($table, "command_log");
@@ -108,7 +141,7 @@ sub createVisualization {
 	updateTable();
 
 	# Return the JScrollPane 
-	return $content;
+	return $scrollPane;
 }
 
 
@@ -119,16 +152,16 @@ popup command_log {
 		$selected = "";
 		foreach $row ([$table getSelectedRows]) {
 			# Get values from table
-            # operator [ip_hostname] user/proc | timestamp> command
+			# operator [ip_hostname] user/proc | timestamp> command
 			$operator = [$model getValueAt: $row, 0];
-            $ip = [$model getValueAt: $row, 1];
-            $hostname = [$model getValueAt: $row, 2];
-            $user = [$model getValueAt: $row, 3];
-            $proc = [$model getValueAt: $row, 4];
-            $time = [$model getValueAt: $row, 6];
-            $command = [$model getValueAt: $row, 5];
+			$ip = [$model getValueAt: $row, 1];
+			$hostname = [$model getValueAt: $row, 2];
+			$user = [$model getValueAt: $row, 3];
+			$proc = [$model getValueAt: $row, 4];
+			$time = [$model getValueAt: $row, 6];
+			$command = [$model getValueAt: $row, 5];
 
-            $selected .= "$operator \[$ip\_$hostname\] $user\/$proc | $time\> $command\n";
+			$selected .= "$operator \[$ip\_$hostname\] $user\/$proc | $time\> $command\n";
 		}
 		add_to_clipboard($selected);
 	}
