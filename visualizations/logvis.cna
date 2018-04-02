@@ -17,15 +17,25 @@ sub updateTable {
 		# Clear the model so we can put new stuff in it.
 		[$model clear: 1024];
 
+		# For each entry in beaconlog, populate a row in the table
 		foreach @entry (data_query('beaconlog')) {
+			# We only care about beacon_input events because those are commands run by operators
             if (@entry[0] eq "beacon_input") {
+				# Get operator who ran the command
                 %modelEntry['operator'] = @entry[2];
+				# Get bid of command
                 $bid = @entry[1];
+				# Get internal IP of system
                 %modelEntry['ip'] = binfo($bid, "internal");
+				# Get hostname of system
                 %modelEntry['hostname'] = binfo($bid, "computer");
+				# Get username beacon is runnning as
                 %modelEntry['user'] = binfo($bid, "user");
+				# Get pid of beacon
                 %modelEntry['pid'] = binfo($bid, "pid");
+				# Get command run on the beacon
                 %modelEntry['command'] = @entry[3];
+				# Get timestamp of command
                 %modelEntry['timestamp'] = formatDate(@entry[4], "MMM dd HH:mm:ss z");
                 # Add the new entry to $model
                 [$model addEntry: %modelEntry];
@@ -36,12 +46,11 @@ sub updateTable {
 	}, \$model);
 }
 
-# setupPopupMenu provided by Raphael Mudge
+# based on setupPopupMenu provided by Raphael Mudge
 # https://gist.github.com/rsmudge/87ce80cd8d8d185c5870d559af2dc0c2
-sub setupPopupMenu {
+sub setupClickListener {
 	# we're using fork({}) to run this in a separate Aggressor Script environment.
 	# This reduces deadlock potential due to Sleep's global interpreter lock
-	#
 	# this especially matters as our mouse listener will be fired for *everything*
 	# to include mouse movements.
 	fork({
@@ -93,7 +102,7 @@ sub createVisualization {
 	$content = [new JScrollPane: $table];
 
 	# Set popup menu for the table
-	setupPopupMenu($table, "command_log");
+	setupClickListener($table, "command_log");
 
 	# Update table contents
 	updateTable();
@@ -105,9 +114,11 @@ sub createVisualization {
 
 popup command_log {
 	item "Copy" {
+		# Copy log entry to clipboard
 		println("Right click captured!");
 		$selected = "";
 		foreach $row ([$table getSelectedRows]) {
+			# Get values from table
             # operator [ip_hostname] user/proc | timestamp> command
 			$operator = [$model getValueAt: $row, 0];
             $ip = [$model getValueAt: $row, 1];
@@ -121,13 +132,25 @@ popup command_log {
 		}
 		add_to_clipboard($selected);
 	}
+	item "Beacon console" {
+		# Open corresponding beacon console
+		$selected = "";
+		foreach $row ([$table getSelectedRows]) {
+			# Compare pid from selected row to pid of all beacons to find correct beacon
+			foreach %beacon (beacons()) {
+				if (%beacon['pid'] eq [$model getValueAt: $row, 4]) {
+					openBeaconConsole(%beacon['id']);
+				} 
+			}
+		}
+	}
 }
 
 popup view {
 	item "Command Log" {
 		# Add a tab with the table
 		$tab = createVisualization();
-		addTab("Beacon Command Log", $tab, "A table of commands that have been run on all beacons.");
+		addTab("Command Log", $tab, "A table of commands that have been run on all beacons.");
 	}
 }
 
