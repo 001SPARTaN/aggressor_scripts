@@ -16,67 +16,67 @@ import table.*;
 global('$model $console');
 
 sub updateHosts {
-	fork({
-		local('$entry');
+    fork({
+        local('$entry');
 
-		# Clear the model so we can put new stuff in it.
-		[$model clear: 256];
+        # Clear the model so we can put new stuff in it.
+        [$model clear: 256];
 
-		foreach $b (beacons()) {
-			%entry["user"] = $b['user'];
+        foreach $b (beacons()) {
+            %entry["user"] = $b['user'];
             %entry["host"] = $b['computer'];
             %entry["bid"] = $b['id'];
-			# Add the new entry to $model
-			[$model addEntry: %entry];
-		}
-		# Update with the new table
-		[$model fireListeners];
-	}, \$model);
+            # Add the new entry to $model
+            [$model addEntry: %entry];
+        }
+        # Update with the new table
+        [$model fireListeners];
+    }, \$model);
 }
 
 sub updateConsole {
-	$msg = $1;
-	# Append our message to $console
-	[$console append: $msg];
+    $msg = $1;
+    # Append our message to $console
+    [$console append: $msg];
 }
 
 sub createVisualization {
-	# GenericTableModel from table.*
+    # GenericTableModel from table.*
     $model = [new GenericTableModel: @("user", "host", "bid"), "bid", 16];
 
-	# Create a table from the GenericTableModel
+    # Create a table from the GenericTableModel
     $table = [new ATable: $model];
 
-	# Controls how the column headers will sort the table
-	$sorter = [new TableRowSorter: $model];
-	[$sorter toggleSortOrder: 0];
-	# We have to use cmp for comparing user, because it's a text string
-	[$sorter setComparator: 0, {
-		return $1 cmp $2;
-	}];
-	# Builtin compareHosts function allows us to sort by host
-	[$sorter setComparator: 1, &compareHosts];
-	# <=> works fine to compare bid, because they're just numbers
+    # Controls how the column headers will sort the table
+    $sorter = [new TableRowSorter: $model];
+    [$sorter toggleSortOrder: 0];
+    # We have to use cmp for comparing user, because it's a text string
+    [$sorter setComparator: 0, {
+        return $1 cmp $2;
+    }];
+    # Builtin compareHosts function allows us to sort by host
+    [$sorter setComparator: 1, &compareHosts];
+    # <=> works fine to compare bid, because they're just numbers
     [$sorter setComparator: 2, {
         return $1 <=> $2;
     }];
 
-	# Set $sorter as the row sorter for $table
-	[$table setRowSorter: $sorter];
+    # Set $sorter as the row sorter for $table
+    [$table setRowSorter: $sorter];
 
-	# console.Display from ui.*
-	# Because it looks better than a boring text area
-	$console = [new console.Display];
+    # console.Display from ui.*
+    # Because it looks better than a boring text area
+    $console = [new console.Display];
 
-	# Create a split pane (divider you can drag around)
-	$content = [new JSplitPane: [JSplitPane HORIZONTAL_SPLIT], [new JScrollPane: $table], $console];
+    # Create a split pane (divider you can drag around)
+    $content = [new JSplitPane: [JSplitPane HORIZONTAL_SPLIT], [new JScrollPane: $table], $console];
 
-	# Make spacing look nice by adjusting the split location
-	[$content setDividerLocation: 450];
+    # Make spacing look nice by adjusting the split location
+    [$content setDividerLocation: 450];
 
-	updateHosts();
+    updateHosts();
 
-	# Register the visualization with CS
+    # Register the visualization with CS
     addVisualization("Custom", $content);
 }
 
@@ -84,20 +84,20 @@ createVisualization();
 
 on beacon_initial {
     updateHosts();
-	$user = beacon_info($1, "user");
-	$host = beacon_info($1, "computer");
-	updateConsole("[BEACON] - ID: \c3$1\c\n");
-	updateConsole("[BEACON] - USER: \c3$user\c\n");
+    $user = beacon_info($1, "user");
+    $host = beacon_info($1, "computer");
+    updateConsole("[BEACON] - ID: \c3$1\c\n");
+    updateConsole("[BEACON] - USER: \c3$user\c\n");
 }
 
 on web_hit {
-	updateConsole("[WEB] - Source: \c4$3\c\n");
+    updateConsole("[WEB] - Source: \c4$3\c\n");
 }
 
 # Add an item to the View menu to show our new visualization
 popup view {
-	item "Custom" {
-		# Show the visualization
-		showVisualization("Custom");
-	}
+    item "Custom" {
+        # Show the visualization
+        showVisualization("Custom");
+    }
 }
