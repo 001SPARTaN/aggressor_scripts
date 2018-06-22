@@ -59,6 +59,16 @@ sub setupClickListener {
                 # If right click, show popup
                 show_popup($1, $name, $component);
             }
+            else if ([$1 getClickCount] == 2) {
+                foreach $row ([$table getSelectedRows]) {
+                    # Compare pid from selected row to pid of all beacons to find correct beacon
+                    foreach %beacon (beacons()) {
+                        if (%beacon['pid'] eq [$model getValueAt: $row, 4]) {
+                            openOrActivate(%beacon['id']);
+                        } 
+                    }
+                }
+            }
         }, \$component, \$name)];
     }, $component => $1, $name => $2, $model => $model, $table => $table);
 }
@@ -143,7 +153,6 @@ sub createVisualization {
     # Return the JScrollPane 
     return $scrollPane;
 }
-
 
 popup command_log {
     item "Copy" {
