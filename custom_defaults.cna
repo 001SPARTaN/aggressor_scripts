@@ -2,6 +2,7 @@
 # 001SPARTaN
 
 # Keyboard shortcuts
+# Next tab and previous tab
 bind Meta+Right {
     nextTab();
 }
@@ -12,6 +13,15 @@ bind Meta+Left {
 
 bind Ctrl+Tab {
     nextTab();
+}
+
+bind Shift+Ctrl+Tab {
+    previousTab();
+}
+
+# Open the Script Console because I use it so much
+bind Shift+Ctrl+S {
+    openScriptConsole();
 }
 
 # Load scripts
