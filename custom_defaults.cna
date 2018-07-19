@@ -19,9 +19,14 @@ bind Shift+Ctrl+Tab {
     previousTab();
 }
 
-# Open the Script Console because I use it so much
+# Open the Script Console
 bind Shift+Ctrl+S {
     openScriptConsole();
+}
+
+# Open the connect dialog
+bind Ctrl+N {
+    openConnectDialog();
 }
 
 # Load scripts
@@ -35,8 +40,8 @@ set EVENT_SBAR_RIGHT {
     return "[\c9Beacons: $beacons\o | lag: $1 $+ ]";
 }
 
-on beacon_initial {
-    if (-isadmin $1) {
-        exec("say -v Fiona 'New admin beacon!'");
-    }
-}
+# on beacon_initial {
+#     if (-isadmin $1) {
+#         exec("say -v Fiona 'New admin beacon!'");
+#     }
+#}
