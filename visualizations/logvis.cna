@@ -65,7 +65,7 @@ sub setupClickListener {
                     foreach %beacon (beacons()) {
                         if (%beacon['pid'] eq [$model getValueAt: $row, 4]) {
                             openOrActivate(%beacon['id']);
-                        } 
+                        }
                     }
                 }
             }
@@ -104,7 +104,7 @@ sub createVisualization {
 
     # Set $sorter as the row sorter for $table
     [$table setRowSorter: $sorter];
-    
+
     # Change resize mode for columns to make the layout a bit nicer.
     # [$table setAutoResizeMode: [JTable AUTO_RESIZE_ON]];
 
@@ -123,18 +123,18 @@ sub createVisualization {
         foreach $row ([$table getSelectedRows]) {
             # Get values from table
             # operator [ip_hostname] user/proc | timestamp> command
-            $operator = [$model getValueAt: $row, 0];
-            $ip = [$model getValueAt: $row, 1];
-            $hostname = [$model getValueAt: $row, 2];
-            $user = [$model getValueAt: $row, 3];
-            $proc = [$model getValueAt: $row, 4];
-            $time = [$model getValueAt: $row, 6];
-            $command = [$model getValueAt: $row, 5];
+            $operator = [$table getValueAt: $row, 0];
+            $ip = [$table getValueAt: $row, 1];
+            $hostname = [$table getValueAt: $row, 2];
+            $user = [$table getValueAt: $row, 3];
+            $proc = [$table getValueAt: $row, 4];
+            $time = [$table getValueAt: $row, 6];
+            $command = [$table getValueAt: $row, 5];
 
             $selected .= "$operator \[$ip\_$hostname\] $user\/$proc | $time\> $command\n";
         }
         add_to_clipboard($selected);
-    }, $model => $model)];
+    }, \$table)];
 
     [$bottom add: $copyButton];
 
@@ -150,7 +150,7 @@ sub createVisualization {
     # Update table contents
     updateTable();
 
-    # Return the JScrollPane 
+    # Return the JScrollPane
     return $scrollPane;
 }
 
@@ -162,13 +162,13 @@ popup command_log {
         foreach $row ([$table getSelectedRows]) {
             # Get values from table
             # operator [ip_hostname] user/proc | timestamp> command
-            $operator = [$model getValueAt: $row, 0];
-            $ip = [$model getValueAt: $row, 1];
-            $hostname = [$model getValueAt: $row, 2];
-            $user = [$model getValueAt: $row, 3];
-            $proc = [$model getValueAt: $row, 4];
-            $time = [$model getValueAt: $row, 6];
-            $command = [$model getValueAt: $row, 5];
+            $operator = [$table getValueAt: $row, 0];
+            $ip = [$table getValueAt: $row, 1];
+            $hostname = [$table getValueAt: $row, 2];
+            $user = [$table getValueAt: $row, 3];
+            $proc = [$table getValueAt: $row, 4];
+            $time = [$table getValueAt: $row, 6];
+            $command = [$table getValueAt: $row, 5];
 
             $selected .= "$operator \[$ip\_$hostname\] $user\/$proc | $time\> $command\n";
         }
@@ -180,9 +180,9 @@ popup command_log {
         foreach $row ([$table getSelectedRows]) {
             # Compare pid from selected row to pid of all beacons to find correct beacon
             foreach %beacon (beacons()) {
-                if (%beacon['pid'] eq [$model getValueAt: $row, 4]) {
+                if (%beacon['pid'] eq [$table getValueAt: $row, 4]) {
                     openBeaconConsole(%beacon['id']);
-                } 
+                }
             }
         }
     }
