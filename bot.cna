@@ -150,7 +150,7 @@ sub autodump {
 
 # Triggered on all public events in the event log
 on event_public {
-    local('@input $cmd @args')
+    local('@input $cmd @args');
     if (substr($2, 0, 1) eq "!") { # If first character is !, it's a command
         @input = split(" ", $2); # Split incoming command on spaces
         $cmd = @input[0]; # Command is !<cmd> arg1 arg2...
